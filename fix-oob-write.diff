@@ -1,0 +1,26 @@
+--- a/src/record.c	2026-09-29 17:41:12.959811630 +0000
++++ b/src/record.c	2026-09-29 17:42:05.420192829 +0000
+@@ -32,16 +32,15 @@
+     /* Bounds-check the READ against the input: this part is safe. */
+     if ((size_t)5 + name_len > size) return REC_ERR_SHORT;
+ 
+-    /* Fixed-size destination... */
+-    char *name = malloc(NAME_CAP);
+-    if (!name) return REC_ERR_NOMEM;
+-
+     /*
+-     * BUG: name_len (0..255) is copied into a 16-byte buffer with no check
+-     * that it fits. When name_len > NAME_CAP the memcpy writes past the end
+-     * of `name`: a heap-buffer-overflow WRITE.
++     * FIX: size the destination to the data that will be written into it,
++     * instead of a hardcoded NAME_CAP that name_len may exceed. malloc(0) is
++     * implementation-defined, so request at least 1 byte.
+      */
+-    memcpy(name, data + 5, name_len);   /* <-- out-of-bounds write here */
++    char *name = malloc(name_len ? name_len : 1);
++    if (!name) return REC_ERR_NOMEM;
++
++    memcpy(name, data + 5, name_len);   /* destination now always large enough */
+ 
+     if (name_out) *name_out = name; else free(name);
+     if (len_out)  *len_out  = name_len;
