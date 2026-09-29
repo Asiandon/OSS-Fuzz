@@ -1,4 +1,4 @@
-# kvparse — OSS-Fuzz-style vulnerability + patch (worked example)
+# kvparse — OSS-Fuzz-style vulnerability + patch
 
 A minimal, self-contained example of the kind of task this work asks for: a
 small C parser with a realistic memory-safety bug, a libFuzzer harness that
