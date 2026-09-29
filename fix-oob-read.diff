@@ -1,0 +1,19 @@
+--- a/src/kvparse.c	2026-09-29 17:05:22.177586806 +0000
++++ b/src/kvparse.c	2026-09-29 17:06:00.744950557 +0000
+@@ -50,11 +50,12 @@
+ 
+         /* --- value (val_len bytes) ---
+          *
+-         * BUG: val_len comes straight from the input and is never checked
+-         * against the number of bytes actually remaining (size - pos).
+-         * When val_len > size - pos, the memcpy below reads past the end of
+-         * the input buffer: a heap-buffer-overflow READ.
++         * FIX: validate the declared value length against the bytes that
++         * actually remain in the buffer BEFORE reading them. This is the
++         * bounds check that was missing; it makes the memcpy below safe.
+          */
++        if (pos + val_len > size) { kv_free(out); return KV_ERR_SHORT; }
++
+         uint8_t *val = malloc(val_len ? val_len : 1);
+         if (!val) { kv_free(out); return KV_ERR_NOMEM; }
+         memcpy(val, data + pos, val_len);     /* <-- out-of-bounds read here */
